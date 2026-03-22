@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -11,4 +8,119 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum PerformerType {
+  ORCHESTRA
+  ENSEMBLE
+  SOLO
+  CHORUS
+  CONDUCTOR
+  OTHER
+}
+
+enum PerformanceStatus {
+  UPCOMING
+  ATTENDED
+  CANCELLED
+  MISSED
+  SKIPPED
+}
+
+// ─── Entities ────────────────────────────────────────────────────────────────
+
+model Performer {
+  id             String        @id @default(uuid())
+  name           String
+  sortName       String?
+  type           PerformerType
+  // Primary instrument or voice type (e.g. "piano", "violin", "soprano"). Not applicable to conductors, orchestras, ensembles, or choruses.
+  specialty      String?
+  musicbrainzId  String?       @unique
+  // back-relations
+  headlinedPerformances   Performance[]     @relation("PerformanceHeadliners")
+  conductedPerformances   Performance[]     @relation("Conductor")
+  setListEntries          SetListPerformer[]
+  conductedSetListEntries SetListEntry[]    @relation("SetListConductor")
+}
+
+model Composer {
+  id            String  @id @default(uuid())
+  name          String
+  sortName      String?
+  musicbrainzId String? @unique
+  // back-relations
+  works Work[]
+}
+
+model Work {
+  id            String  @id @default(uuid())
+  title         String
+  type          String?
+  key           String?
+  catalogNumber String?
+  musicbrainzId String? @unique
+  // relations
+  composers      Composer[]
+  // back-relations
+  setListEntries SetListEntry[]
+}
+
+model Venue {
+  id               String  @id @default(uuid())
+  name             String
+  city             String
+  country          String
+  formattedAddress String?
+  websiteUri       String?
+  // OpenStreetMap identifier — both fields are required together to uniquely identify a place
+  osmType          String?
+  osmId            BigInt?
+  // back-relations
+  performances Performance[]
+}
+
+// ─── Performance ─────────────────────────────────────────────────────────────
+
+model Performance {
+  id          String            @id @default(uuid())
+  date        DateTime
+  status      PerformanceStatus @default(UPCOMING)
+  notes       String?
+  venueId     String
+  conductorId String?
+  // relations
+  venue      Venue       @relation(fields: [venueId], references: [id])
+  conductor  Performer?  @relation("Conductor", fields: [conductorId], references: [id])
+  performers Performer[] @relation("PerformanceHeadliners")
+  // back-relations
+  setList SetListEntry[]
+}
+
+model SetListEntry {
+  id            String  @id @default(uuid())
+  order         Int
+  performanceId String
+  workId        String
+  conductorId   String?
+  // relations
+  performance Performance @relation(fields: [performanceId], references: [id])
+  work        Work        @relation(fields: [workId], references: [id])
+  conductor   Performer?  @relation("SetListConductor", fields: [conductorId], references: [id])
+  // back-relations
+  featuredPerformers SetListPerformer[]
+}
+
+model SetListPerformer {
+  // The instrument played or voice type sung, e.g. "violin", "soprano", "piano"
+  role           String
+  setListEntryId String
+  performerId    String
+  // relations
+  setListEntry SetListEntry @relation(fields: [setListEntryId], references: [id])
+  performer    Performer    @relation(fields: [performerId], references: [id])
+
+  @@id([setListEntryId, performerId, role])
 }
