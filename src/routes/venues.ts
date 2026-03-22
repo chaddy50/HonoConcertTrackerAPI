@@ -1,7 +1,21 @@
 import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import db from '../db.js'
 
 const venues = new Hono()
+
+const validationSchemas = {
+  create: z.object({
+    name: z.string(),
+    city: z.string(),
+    country: z.string(),
+    formattedAddress: z.string().optional(),
+    websiteUri: z.url().optional(),
+    osmType: z.string().optional(),
+    osmId: z.string().optional(),
+  }),
+}
 
 // BigInt cannot be serialized to JSON natively, so we convert osmId to a string
 function serializeVenue(venue: Awaited<ReturnType<typeof db.venue.findUniqueOrThrow>>) {
@@ -28,8 +42,8 @@ venues.get('/:id', async (c) => {
   return c.json(serializeVenue(venue))
 })
 
-venues.post('/', async (c) => {
-  const body = await c.req.json()
+venues.post('/', zValidator('json', validationSchemas.create), async (c) => {
+  const body = c.req.valid('json')
 
   const venue = await db.venue.create({
     data: {

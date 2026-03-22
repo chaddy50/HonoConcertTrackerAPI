@@ -1,7 +1,17 @@
 import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import db from '../db.js'
 
 const composers = new Hono()
+
+const validationSchemas = {
+  create: z.object({
+    name: z.string(),
+    sortName: z.string().optional(),
+    musicbrainzId: z.string().optional(),
+  }),
+}
 
 composers.get('/', async (c) => {
   const all = await db.composer.findMany()
@@ -20,8 +30,8 @@ composers.get('/:id', async (c) => {
   return c.json(composer)
 })
 
-composers.post('/', async (c) => {
-  const body = await c.req.json()
+composers.post('/', zValidator('json', validationSchemas.create), async (c) => {
+  const body = c.req.valid('json')
 
   const composer = await db.composer.create({
     data: {

@@ -1,7 +1,30 @@
 import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import db from '../db.js'
 
 const setListEntries = new Hono()
+
+const featuredPerformerSchema = z.object({
+  performerId: z.string(),
+  role: z.string(),
+})
+
+const validationSchemas = {
+  create: z.object({
+    performanceId: z.string(),
+    workId: z.string(),
+    order: z.number().int().positive(),
+    conductorId: z.string().optional(),
+    featuredPerformers: z.array(featuredPerformerSchema).min(1),
+  }),
+  update: z.object({
+    workId: z.string().optional(),
+    order: z.number().int().positive().optional(),
+    conductorId: z.string().nullable().optional(),
+    featuredPerformers: z.array(featuredPerformerSchema).min(1).optional(),
+  }),
+}
 
 const relationsToInclude = {
   work: {
@@ -13,8 +36,8 @@ const relationsToInclude = {
   }
 }
 
-setListEntries.post('/', async (c) => {
-  const body = await c.req.json()
+setListEntries.post('/', zValidator('json', validationSchemas.create), async (c) => {
+  const body = c.req.valid('json')
 
   const entry = await db.setListEntry.create({
     data: {
@@ -25,9 +48,9 @@ setListEntries.post('/', async (c) => {
         ? { connect: { id: body.conductorId } }
         : undefined,
       featuredPerformers: {
-        create: body.featuredPerformers.map((fp: { performerId: string, role: string }) => ({
-          performerId: fp.performerId,
-          role: fp.role,
+        create: body.featuredPerformers.map((featuredPerformer) => ({
+          performerId: featuredPerformer.performerId,
+          role: featuredPerformer.role,
         }))
       }
     },
@@ -37,8 +60,8 @@ setListEntries.post('/', async (c) => {
   return c.json(entry, 201)
 })
 
-setListEntries.put('/:id', async (c) => {
-  const body = await c.req.json()
+setListEntries.put('/:id', zValidator('json', validationSchemas.update), async (c) => {
+  const body = c.req.valid('json')
   const id = c.req.param('id')
 
   // Delete and recreate featuredPerformers since the junction table has
@@ -64,9 +87,9 @@ setListEntries.put('/:id', async (c) => {
             : undefined,
         featuredPerformers: body.featuredPerformers
           ? {
-              create: body.featuredPerformers.map((fp: { performerId: string, role: string }) => ({
-                performerId: fp.performerId,
-                role: fp.role,
+              create: body.featuredPerformers.map((featuredPerformer) => ({
+                performerId: featuredPerformer.performerId,
+                role: featuredPerformer.role,
               }))
             }
           : undefined,

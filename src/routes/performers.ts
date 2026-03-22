@@ -1,7 +1,20 @@
 import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import db from '../db.js'
+import { PerformerType } from '../generated/prisma/index.js'
 
 const performers = new Hono()
+
+const validationSchemas = {
+  create: z.object({
+    name: z.string(),
+    sortName: z.string().optional(),
+    type: z.enum(PerformerType),
+    specialty: z.string().optional(),
+    musicbrainzId: z.string().optional(),
+  }),
+}
 
 performers.get('/', async (c) => {
   const all = await db.performer.findMany()
@@ -20,8 +33,8 @@ performers.get('/:id', async (c) => {
   return c.json(performer)
 })
 
-performers.post('/', async (c) => {
-  const body = await c.req.json()
+performers.post('/', zValidator('json', validationSchemas.create), async (c) => {
+  const body = c.req.valid('json')
 
   const performer = await db.performer.create({
     data: {

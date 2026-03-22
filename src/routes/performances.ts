@@ -1,7 +1,29 @@
 import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { z } from 'zod'
 import db from '../db.js'
+import { PerformanceStatus } from '../generated/prisma/index.js'
 
 const performances = new Hono()
+
+const validationSchemas = {
+  create: z.object({
+    date: z.iso.datetime(),
+    status: z.enum(PerformanceStatus).optional(),
+    notes: z.string().optional(),
+    venueId: z.string(),
+    performerIds: z.array(z.string()).min(1),
+    conductorId: z.string().optional(),
+  }),
+  update: z.object({
+    date: z.iso.datetime().optional(),
+    status: z.enum(PerformanceStatus).optional(),
+    notes: z.string().optional(),
+    venueId: z.string().optional(),
+    performerIds: z.array(z.string()).min(1).optional(),
+    conductorId: z.string().nullable().optional(),
+  }),
+}
 
 const relationsToInclude = {
   venue: true,
@@ -40,8 +62,8 @@ performances.get('/:id', async (c) => {
   return c.json(performance)
 })
 
-performances.post('/', async (c) => {
-  const body = await c.req.json()
+performances.post('/', zValidator('json', validationSchemas.create), async (c) => {
+  const body = c.req.valid('json')
 
   const performance = await db.performance.create({
     data: {
@@ -50,7 +72,7 @@ performances.post('/', async (c) => {
       notes: body.notes,
       venue: { connect: { id: body.venueId } },
       performers: {
-        connect: body.performerIds.map((id: string) => ({ id }))
+        connect: body.performerIds.map((id) => ({ id }))
       },
       conductor: body.conductorId
         ? { connect: { id: body.conductorId } }
@@ -62,8 +84,8 @@ performances.post('/', async (c) => {
   return c.json(performance, 201)
 })
 
-performances.put('/:id', async (c) => {
-  const body = await c.req.json()
+performances.put('/:id', zValidator('json', validationSchemas.update), async (c) => {
+  const body = c.req.valid('json')
 
   const performance = await db.performance.update({
     where: { id: c.req.param('id') },
@@ -75,7 +97,7 @@ performances.put('/:id', async (c) => {
         ? { connect: { id: body.venueId } }
         : undefined,
       performers: body.performerIds
-        ? { set: body.performerIds.map((id: string) => ({ id })) }
+        ? { set: body.performerIds.map((id) => ({ id })) }
         : undefined,
       conductor: body.conductorId
         ? { connect: { id: body.conductorId } }
