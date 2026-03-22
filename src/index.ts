@@ -6,8 +6,11 @@ import venues from './routes/venues.js'
 import works from './routes/works.js'
 import performances from './routes/performances.js'
 import setListEntries from './routes/setListEntries.js'
+import { handleError } from './lib/errors.js'
 
 const app = new Hono()
+
+app.onError(handleError)
 
 app.route('/v1/composers', composers)
 app.route('/v1/performers', performers)
