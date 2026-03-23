@@ -2,9 +2,37 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import db from '../db.js'
-import { PerformanceStatus } from '../generated/prisma/index.js'
+import { Prisma, PerformanceStatus } from '../generated/prisma/index.js'
 
 const performances = new Hono()
+
+const relationsToInclude = {
+  venue: true,
+  performers: true,
+  conductor: true,
+  setList: {
+    include: {
+      work: {
+        include: { composers: true }
+      },
+      conductor: true,
+      featuredPerformers: {
+        include: { performer: true }
+      }
+    }
+  }
+} satisfies Prisma.PerformanceInclude
+
+// BigInt cannot be serialized to JSON natively, so we convert venue.osmId to a string
+function serializePerformance(performance: Prisma.PerformanceGetPayload<{ include: typeof relationsToInclude }>) {
+  return {
+    ...performance,
+    venue: {
+      ...performance.venue,
+      osmId: performance.venue.osmId.toString(),
+    },
+  }
+}
 
 const validationSchemas = {
   create: z.object({
@@ -25,28 +53,11 @@ const validationSchemas = {
   }),
 }
 
-const relationsToInclude = {
-  venue: true,
-  performers: true,
-  conductor: true,
-  setList: {
-    include: {
-      work: {
-        include: { composers: true }
-      },
-      conductor: true,
-      featuredPerformers: {
-        include: { performer: true }
-      }
-    }
-  }
-}
-
 performances.get('/', async (c) => {
   const all = await db.performance.findMany({
     include: relationsToInclude
   })
-  return c.json(all)
+  return c.json(all.map(serializePerformance))
 })
 
 performances.get('/:id', async (c) => {
@@ -59,7 +70,7 @@ performances.get('/:id', async (c) => {
     return c.json({ error: 'Performance not found' }, 404)
   }
 
-  return c.json(performance)
+  return c.json(serializePerformance(performance))
 })
 
 performances.post('/', zValidator('json', validationSchemas.create), async (c) => {
@@ -81,7 +92,7 @@ performances.post('/', zValidator('json', validationSchemas.create), async (c) =
     include: relationsToInclude
   })
 
-  return c.json(performance, 201)
+  return c.json(serializePerformance(performance), 201)
 })
 
 performances.put('/:id', zValidator('json', validationSchemas.update), async (c) => {
@@ -108,7 +119,7 @@ performances.put('/:id', zValidator('json', validationSchemas.update), async (c)
     include: relationsToInclude
   })
 
-  return c.json(performance)
+  return c.json(serializePerformance(performance))
 })
 
 performances.delete('/:id', async (c) => {
