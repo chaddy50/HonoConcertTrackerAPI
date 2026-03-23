@@ -7,13 +7,13 @@ const venues = new Hono()
 
 const validationSchemas = {
   create: z.object({
-    name: z.string(),
-    city: z.string(),
-    country: z.string(),
+    osmType: z.string(),
+    osmId: z.string(),
+    name: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
     formattedAddress: z.string().optional(),
     websiteUri: z.url().optional(),
-    osmType: z.string().optional(),
-    osmId: z.string().optional(),
   }),
 }
 
@@ -21,7 +21,7 @@ const validationSchemas = {
 function serializeVenue(venue: Awaited<ReturnType<typeof db.venue.findUniqueOrThrow>>) {
   return {
     ...venue,
-    osmId: venue.osmId?.toString() ?? null,
+    osmId: venue.osmId.toString(),
   }
 }
 
@@ -47,13 +47,13 @@ venues.post('/', zValidator('json', validationSchemas.create), async (c) => {
 
   const venue = await db.venue.create({
     data: {
+      osmType: body.osmType,
+      osmId: BigInt(body.osmId),
       name: body.name,
       city: body.city,
       country: body.country,
       formattedAddress: body.formattedAddress,
       websiteUri: body.websiteUri,
-      osmType: body.osmType,
-      osmId: body.osmId ? BigInt(body.osmId) : null,
     }
   })
 

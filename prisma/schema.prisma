@@ -70,14 +70,17 @@ model Work {
 
 model Venue {
   id               String  @id @default(uuid())
-  name             String
-  city             String
-  country          String
+  // Caller-supplied name takes precedence; if omitted, will be populated from the OSM entry
+  name             String?
+  // Derived from the OSM entry
+  city             String?
+  country          String?
   formattedAddress String?
   websiteUri       String?
-  // OpenStreetMap identifier — both fields are required together to uniquely identify a place
-  osmType          String?
-  osmId            BigInt?
+  // OpenStreetMap identifier — both fields are required together to uniquely identify a place.
+  // No unique constraint: the same OSM entity can map to multiple venues (e.g. two auditoriums in one building).
+  osmType          String
+  osmId            BigInt
   // back-relations
   performances Performance[]
 }
