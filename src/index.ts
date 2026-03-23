@@ -1,15 +1,20 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { handleError } from './lib/errors.js'
 import composers from './routes/composers.js'
+import performances from './routes/performances.js'
 import performers from './routes/performers.js'
+import setListEntries from './routes/setListEntries.js'
 import venues from './routes/venues.js'
 import works from './routes/works.js'
-import performances from './routes/performances.js'
-import setListEntries from './routes/setListEntries.js'
-import { handleError } from './lib/errors.js'
 
 const app = new Hono()
 
+// CORS allows browsers to make requests to this API from a different origin (domain/port).
+// Without this, the web frontend would be blocked by the browser's same-origin policy.
+// The default allows all origins (*), which can be restricted to specific domains later.
+app.use(cors())
 app.onError(handleError)
 
 app.route('/v1/composers', composers)
