@@ -102,7 +102,6 @@ async function main() {
     data: {
       date: new Date("2025-11-15T20:00:00-05:00"),
       status: "ATTENDED",
-      notes: "Argerich was in superb form in the Brahms. Karajan drew an unusually dark reading of the Beethoven.",
       venueId: carnegieHall.id,
       conductorId: karajan.id,
       performers: { connect: [{ id: berlinPhil.id }, { id: argerich.id }] },
@@ -112,6 +111,7 @@ async function main() {
   const sle1 = await prisma.setListEntry.create({
     data: {
       order: 1,
+      notes: "Argerich's tempo in the first movement was astonishing — effortless at that speed.",
       performanceId: p1.id,
       workId: brahmsPC2.id,
       conductorId: karajan.id,
@@ -124,6 +124,7 @@ async function main() {
   await prisma.setListEntry.create({
     data: {
       order: 2,
+      notes: "Karajan drew an unusually dark reading — the finale felt inevitable rather than triumphant.",
       performanceId: p1.id,
       workId: beethoven5.id,
       conductorId: karajan.id,
@@ -135,7 +136,6 @@ async function main() {
     data: {
       date: new Date("2026-04-10T19:30:00+01:00"),
       status: "UPCOMING",
-      notes: "BBC Proms opening night. Expecting a sold-out house.",
       venueId: royalAlbertHall.id,
       conductorId: rattle.id,
       performers: { connect: [{ id: lso.id }] },

@@ -87,7 +87,6 @@ describe('GET /v1/performances/:id', () => {
     const created = await createPerformance(venue.id, [performer.id], {
       date: '2025-06-20T20:00:00.000Z',
       status: 'ATTENDED',
-      notes: 'Excellent concert',
       conductorId: conductor.id,
     })
 
@@ -96,7 +95,6 @@ describe('GET /v1/performances/:id', () => {
     expect(res.status).toBe(200)
     expect(body.date).toBe('2025-06-20T20:00:00.000Z')
     expect(body.status).toBe('ATTENDED')
-    expect(body.notes).toBe('Excellent concert')
     expect(body.venue.name).toBe('Carnegie Hall')
     expect(body.performers).toHaveLength(1)
     expect(body.performers[0].name).toBe('Vienna Philharmonic')
@@ -180,7 +178,6 @@ describe('POST /v1/performances', () => {
     const venue = await createVenue()
     const performer = await createPerformer()
     const body = await createPerformance(venue.id, [performer.id])
-    expect(body.notes).toBeNull()
     expect(body.conductor).toBeNull()
   })
 
@@ -193,7 +190,6 @@ describe('POST /v1/performances', () => {
       body: JSON.stringify({
         date: '2025-06-20T20:00:00.000Z',
         status: 'UPCOMING',
-        notes: 'Front row seats',
         venueId: venue.id,
         performerIds: [performer.id],
       }),
@@ -203,7 +199,6 @@ describe('POST /v1/performances', () => {
     expect(body.id).toBeDefined()
     expect(body.date).toBe('2025-06-20T20:00:00.000Z')
     expect(body.status).toBe('UPCOMING')
-    expect(body.notes).toBe('Front row seats')
     expect(body.venue.id).toBe(venue.id)
     expect(body.performers).toHaveLength(1)
     expect(body.performers[0].id).toBe(performer.id)
@@ -271,17 +266,6 @@ describe('PUT /v1/performances/:id', () => {
     const body = await res.json() as any
     expect(res.status).toBe(200)
     expect(body.status).toBe('ATTENDED')
-  })
-
-  it('updates the notes', async () => {
-    const res = await app.request(`/v1/performances/${performanceId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ notes: 'Incredible performance' }),
-    })
-    const body = await res.json() as any
-    expect(res.status).toBe(200)
-    expect(body.notes).toBe('Incredible performance')
   })
 
   it('updates the venue', async () => {

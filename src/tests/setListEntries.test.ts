@@ -144,6 +144,24 @@ describe('POST /v1/set-list-entries', () => {
     expect(body.featuredPerformers[0].performer.id).toBe(performer.id)
   })
 
+  it('notes defaults to null when not provided', async () => {
+    const { work, performance, performer } = await setupPrerequisites()
+    const body = await createSetListEntry(performance.id, work.id, 1, [{ performerId: performer.id, role: 'violin' }])
+    expect(body.notes).toBeNull()
+  })
+
+  it('stores notes when provided', async () => {
+    const { work, performance, performer } = await setupPrerequisites()
+    const body = await createSetListEntry(
+      performance.id,
+      work.id,
+      1,
+      [{ performerId: performer.id, role: 'violin' }],
+      { notes: 'Stunning pianissimo in the development section.' }
+    )
+    expect(body.notes).toBe('Stunning pianissimo in the development section.')
+  })
+
   it('conductor defaults to null when not provided', async () => {
     const { work, performance, performer } = await setupPrerequisites()
     const body = await createSetListEntry(performance.id, work.id, 1, [{ performerId: performer.id, role: 'violin' }])
@@ -202,6 +220,17 @@ describe('PUT /v1/set-list-entries/:id', () => {
       [{ performerId: prereqs.performer.id, role: 'violin' }]
     )
     entryId = entry.id
+  })
+
+  it('updates the notes', async () => {
+    const res = await app.request(`/v1/set-list-entries/${entryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notes: 'The cadenza was breathtaking.' }),
+    })
+    const body = await res.json() as any
+    expect(res.status).toBe(200)
+    expect(body.notes).toBe('The cadenza was breathtaking.')
   })
 
   it('updates the order', async () => {

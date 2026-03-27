@@ -15,12 +15,14 @@ const validationSchemas = {
     performanceId: z.string(),
     workId: z.string(),
     order: z.number().int().positive(),
+    notes: z.string().optional(),
     conductorId: z.string().optional(),
     featuredPerformers: z.array(featuredPerformerSchema).min(1),
   }),
   update: z.object({
     workId: z.string().optional(),
     order: z.number().int().positive().optional(),
+    notes: z.string().optional(),
     conductorId: z.string().nullable().optional(),
     featuredPerformers: z.array(featuredPerformerSchema).min(1).optional(),
   }),
@@ -42,6 +44,7 @@ setListEntries.post('/', zValidator('json', validationSchemas.create), async (c)
   const entry = await db.setListEntry.create({
     data: {
       order: body.order,
+      notes: body.notes,
       performance: { connect: { id: body.performanceId } },
       work: { connect: { id: body.workId } },
       conductor: body.conductorId
@@ -77,6 +80,7 @@ setListEntries.put('/:id', zValidator('json', validationSchemas.update), async (
       where: { id },
       data: {
         order: body.order,
+        notes: body.notes,
         work: body.workId
           ? { connect: { id: body.workId } }
           : undefined,

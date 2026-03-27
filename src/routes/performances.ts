@@ -42,7 +42,6 @@ const validationSchemas = {
   create: z.object({
     date: z.iso.datetime(),
     status: z.enum(PerformanceStatus).optional(),
-    notes: z.string().optional(),
     venueId: z.string(),
     performerIds: z.array(z.string()).min(1),
     conductorId: z.string().optional(),
@@ -50,7 +49,6 @@ const validationSchemas = {
   update: z.object({
     date: z.iso.datetime().optional(),
     status: z.enum(PerformanceStatus).optional(),
-    notes: z.string().optional(),
     venueId: z.string().optional(),
     performerIds: z.array(z.string()).min(1).optional(),
     conductorId: z.string().nullable().optional(),
@@ -86,7 +84,6 @@ performances.post('/', zValidator('json', validationSchemas.create), async (c) =
     data: {
       date: new Date(body.date),
       status: body.status,
-      notes: body.notes,
       venue: { connect: { id: body.venueId } },
       performers: {
         connect: body.performerIds.map((id) => ({ id }))
@@ -109,7 +106,6 @@ performances.put('/:id', zValidator('json', validationSchemas.update), async (c)
     data: {
       date: body.date ? new Date(body.date) : undefined,
       status: body.status,
-      notes: body.notes,
       venue: body.venueId
         ? { connect: { id: body.venueId } }
         : undefined,
