@@ -35,6 +35,10 @@ function serializePerformance(performance: Prisma.PerformanceGetPayload<{ includ
 }
 
 const validationSchemas = {
+  list: z.object({
+    orderBy: z.enum(['date']).default('date'),
+    order: z.enum(['asc', 'desc']).default('desc'),
+  }),
   create: z.object({
     date: z.iso.datetime(),
     status: z.enum(PerformanceStatus).optional(),
@@ -53,9 +57,11 @@ const validationSchemas = {
   }),
 }
 
-performances.get('/', async (c) => {
+performances.get('/', zValidator('query', validationSchemas.list), async (c) => {
+  const { orderBy, order } = c.req.valid('query')
   const all = await db.performance.findMany({
-    include: relationsToInclude
+    include: relationsToInclude,
+    orderBy: { [orderBy]: order },
   })
   return c.json(all.map(serializePerformance))
 })

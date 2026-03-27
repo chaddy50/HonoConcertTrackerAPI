@@ -41,6 +41,37 @@ describe('GET /v1/performances', () => {
     expect(res.status).toBe(200)
     expect(body).toHaveLength(2)
   })
+
+  it('returns performances sorted by date desc by default', async () => {
+    const venue = await createVenue()
+    const performer = await createPerformer()
+    const p1 = await createPerformance(venue.id, [performer.id], { date: '2025-01-01T00:00:00.000Z' })
+    const p2 = await createPerformance(venue.id, [performer.id], { date: '2026-01-01T00:00:00.000Z' })
+
+    const res = await app.request('/v1/performances')
+    expect(res.status).toBe(200)
+    const body = await res.json() as any[]
+    expect(body[0].id).toBe(p2.id)
+    expect(body[1].id).toBe(p1.id)
+  })
+
+  it('returns performances sorted by date asc when order=asc', async () => {
+    const venue = await createVenue()
+    const performer = await createPerformer()
+    const p1 = await createPerformance(venue.id, [performer.id], { date: '2025-01-01T00:00:00.000Z' })
+    const p2 = await createPerformance(venue.id, [performer.id], { date: '2026-01-01T00:00:00.000Z' })
+
+    const res = await app.request('/v1/performances?order=asc')
+    expect(res.status).toBe(200)
+    const body = await res.json() as any[]
+    expect(body[0].id).toBe(p1.id)
+    expect(body[1].id).toBe(p2.id)
+  })
+
+  it('returns 400 for an invalid orderBy field', async () => {
+    const res = await app.request('/v1/performances?orderBy=invalid')
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('GET /v1/performances/:id', () => {
