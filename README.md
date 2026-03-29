@@ -41,13 +41,20 @@ This API was built with [TypeScript](https://www.typescriptlang.org/) and [Hono]
 
 ## Libraries
 [PostgreSQL](https://www.postgresql.org/) for the database.
+<br>
 [Prisma ORM](https://www.prisma.io/) for database access and migrations.
+<br>
 [`@prisma/adapter-pg`](https://www.npmjs.com/package/@prisma/adapter-pg) to connect Prisma to PostgreSQL.
+<br>
 [Zod](https://zod.dev/) with `@hono/zod-validator` for validating requests sent to the API.
+<br>
 [Vitest](https://vitest.dev/) for automated testing.
+<br>
 [Testcontainers](https://testcontainers.com/) for running a test PostgreSQL database.
+<br>
 [Docker](https://www.docker.com/) with compose for self-hosting.
 
 ## External APIs
 [MusicBrainz](https://musicbrainz.org/) for metadata enrichment for performers, composers, and works.
+<br>
 [OpenStreetMap](https://www.openstreetmap.org/) for choosing and linking to venues.
