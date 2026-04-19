@@ -1,5 +1,5 @@
-import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
 import { z } from 'zod'
 import db from '../db.js'
 
@@ -17,14 +17,14 @@ const validationSchemas = {
     order: z.number().int().positive(),
     notes: z.string().optional(),
     conductorId: z.string().optional(),
-    featuredPerformers: z.array(featuredPerformerSchema).min(1),
+    featuredPerformers: z.array(featuredPerformerSchema).optional(),
   }),
   update: z.object({
     workId: z.string().optional(),
     order: z.number().int().positive().optional(),
     notes: z.string().optional(),
     conductorId: z.string().nullable().optional(),
-    featuredPerformers: z.array(featuredPerformerSchema).min(1).optional(),
+    featuredPerformers: z.array(featuredPerformerSchema).optional(),
   }),
 }
 
@@ -51,7 +51,7 @@ setListEntries.post('/', zValidator('json', validationSchemas.create), async (c)
         ? { connect: { id: body.conductorId } }
         : undefined,
       featuredPerformers: {
-        create: body.featuredPerformers.map((featuredPerformer) => ({
+        create: body.featuredPerformers?.map((featuredPerformer) => ({
           performerId: featuredPerformer.performerId,
           role: featuredPerformer.role,
         }))

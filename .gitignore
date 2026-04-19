@@ -29,3 +29,4 @@ lerna-debug.log*
 
 /src/generated/prisma
 concert-tracker-phases.md
+CODE_REVIEW_TODO.md

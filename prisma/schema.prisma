@@ -50,7 +50,7 @@ model Composer {
   id            String  @id @default(uuid())
   name          String
   sortName      String?
-  musicbrainzId String? @unique
+  openOpusId String? @unique
   // back-relations
   works Work[]
 }
@@ -61,7 +61,7 @@ model Work {
   type          String?
   key           String?
   catalogNumber String?
-  musicbrainzId String? @unique
+  openOpusId String? @unique
   // relations
   composers      Composer[]
   // back-relations

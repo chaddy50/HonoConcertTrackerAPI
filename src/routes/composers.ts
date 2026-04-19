@@ -1,5 +1,5 @@
-import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
 import { z } from 'zod'
 import db from '../db.js'
 
@@ -9,7 +9,7 @@ const validationSchemas = {
   create: z.object({
     name: z.string(),
     sortName: z.string().optional(),
-    musicbrainzId: z.string().optional(),
+    openOpusId: z.string().optional(),
   }),
 }
 
@@ -18,9 +18,9 @@ composers.get('/', async (c) => {
   return c.json(all)
 })
 
-composers.get('/:id', async (c) => {
+composers.get('/:openOpusId', async (c) => {
   const composer = await db.composer.findUnique({
-    where: { id: c.req.param('id') }
+    where: { openOpusId: c.req.param('openOpusId') }
   })
 
   if (!composer) {
@@ -37,7 +37,7 @@ composers.post('/', zValidator('json', validationSchemas.create), async (c) => {
     data: {
       name: body.name,
       sortName: body.sortName,
-      musicbrainzId: body.musicbrainzId,
+      openOpusId: body.openOpusId,
     }
   })
 
