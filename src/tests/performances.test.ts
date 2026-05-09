@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { PerformanceStatus } from '../generated/prisma/index.js'
+import { PerformanceStatus } from '@prisma/client'
 import app from '../index.js'
 import { resetDatabase } from './helpers/db.js'
 import { createComposer, createPerformance, createPerformer, createVenue, createWork } from './helpers/fixtures.js'

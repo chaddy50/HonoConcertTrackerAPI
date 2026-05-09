@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import db from '../db.js'
-import { Prisma, PerformanceStatus } from '../generated/prisma/index.js'
+import { Prisma, PerformanceStatus } from '@prisma/client'
 
 const performances = new Hono()
 

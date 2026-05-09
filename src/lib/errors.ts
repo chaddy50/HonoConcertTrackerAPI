@@ -1,5 +1,5 @@
 import { type Context } from 'hono'
-import { Prisma } from '../generated/prisma/index.js'
+import { Prisma } from '@prisma/client'
 
 export function handleError(err: unknown, c: Context) {
   if (err instanceof Prisma.PrismaClientKnownRequestError) {

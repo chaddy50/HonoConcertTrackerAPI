@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { PerformerType } from '../generated/prisma/index.js'
+import { PerformerType } from '@prisma/client'
 import app from '../index.js'
 import { resetDatabase } from './helpers/db.js'
 import { createPerformer } from './helpers/fixtures.js'
