@@ -1,4 +1,15 @@
 services:
+  api:
+    build: .
+    container_name: concert_tracker_api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://concert:concert@db:5432/concert_tracker"
+    depends_on:
+      - db
+
   db:
     image: postgres:17
     container_name: concert_tracker_database
