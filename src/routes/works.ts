@@ -2,6 +2,7 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import db from '../db.js'
+import { handleError } from '../lib/errors.js'
 
 const works = new Hono()
 
@@ -23,9 +24,9 @@ works.get('/', async (c) => {
   return c.json(all)
 })
 
-works.get('/:openOpusId', async (c) => {
+works.get('/:id', async (c) => {
   const work = await db.work.findUnique({
-    where: { openOpusId: c.req.param('openOpusId') },
+    where: { id: c.req.param('id') },
     include: { composers: true }
   })
 
@@ -39,21 +40,25 @@ works.get('/:openOpusId', async (c) => {
 works.post('/', zValidator('json', validationSchemas.create), async (c) => {
   const body = c.req.valid('json')
 
-  const work = await db.work.create({
-    data: {
-      title: body.title,
-      type: body.type,
-      key: body.key,
-      catalogNumber: body.catalogNumber,
-      openOpusId: body.openOpusId,
-      composers: {
-        connect: body.composerIds.map((id) => ({ id }))
-      }
-    },
-    include: { composers: true }
-  })
+  try {
+    const work = await db.work.create({
+      data: {
+        title: body.title,
+        type: body.type,
+        key: body.key,
+        catalogNumber: body.catalogNumber,
+        openOpusId: body.openOpusId,
+        composers: {
+          connect: body.composerIds.map((id) => ({ id }))
+        }
+      },
+      include: { composers: true }
+    })
 
-  return c.json(work, 201)
+    return c.json(work, 201)
+  } catch (err) {
+    return handleError(err, c)
+  }
 })
 
 export default works

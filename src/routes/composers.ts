@@ -2,6 +2,7 @@ import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import db from '../db.js'
+import { handleError } from '../lib/errors.js'
 
 const composers = new Hono()
 
@@ -18,9 +19,9 @@ composers.get('/', async (c) => {
   return c.json(all)
 })
 
-composers.get('/:openOpusId', async (c) => {
+composers.get('/:id', async (c) => {
   const composer = await db.composer.findUnique({
-    where: { openOpusId: c.req.param('openOpusId') }
+    where: { id: c.req.param('id') }
   })
 
   if (!composer) {
@@ -33,15 +34,19 @@ composers.get('/:openOpusId', async (c) => {
 composers.post('/', zValidator('json', validationSchemas.create), async (c) => {
   const body = c.req.valid('json')
 
-  const composer = await db.composer.create({
-    data: {
-      name: body.name,
-      sortName: body.sortName,
-      openOpusId: body.openOpusId,
-    }
-  })
+  try {
+    const composer = await db.composer.create({
+      data: {
+        name: body.name,
+        sortName: body.sortName,
+        openOpusId: body.openOpusId,
+      }
+    })
 
-  return c.json(composer, 201)
+    return c.json(composer, 201)
+  } catch (err) {
+    return handleError(err, c)
+  }
 })
 
 export default composers

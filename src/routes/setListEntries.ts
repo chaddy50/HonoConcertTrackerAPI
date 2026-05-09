@@ -17,7 +17,7 @@ const validationSchemas = {
     order: z.number().int().positive(),
     notes: z.string().optional(),
     conductorId: z.string().optional(),
-    featuredPerformers: z.array(featuredPerformerSchema).optional(),
+    featuredPerformers: z.array(featuredPerformerSchema).min(1),
   }),
   update: z.object({
     workId: z.string().optional(),

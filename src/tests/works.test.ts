@@ -52,7 +52,7 @@ describe('GET /v1/works/:id', () => {
       type: 'Symphony',
       key: 'C minor',
       catalogNumber: 'Op. 68',
-      musicbrainzId: 'brahms-sym1-mbid',
+      openOpusId: 'brahms-sym1-mbid',
     })
 
     const res = await app.request(`/v1/works/${created.id}`)
@@ -62,7 +62,7 @@ describe('GET /v1/works/:id', () => {
     expect(body.type).toBe('Symphony')
     expect(body.key).toBe('C minor')
     expect(body.catalogNumber).toBe('Op. 68')
-    expect(body.musicbrainzId).toBe('brahms-sym1-mbid')
+    expect(body.openOpusId).toBe('brahms-sym1-mbid')
     expect(body.composers).toHaveLength(1)
     expect(body.composers[0].name).toBe('Johannes Brahms')
   })
@@ -103,7 +103,7 @@ describe('POST /v1/works', () => {
     expect(body.type).toBeNull()
     expect(body.key).toBeNull()
     expect(body.catalogNumber).toBeNull()
-    expect(body.musicbrainzId).toBeNull()
+    expect(body.openOpusId).toBeNull()
   })
 
   it('creates a work and returns 201', async () => {
@@ -116,7 +116,7 @@ describe('POST /v1/works', () => {
         type: 'Symphony',
         key: 'G minor',
         catalogNumber: 'K. 550',
-        musicbrainzId: 'mozart-k550-mbid',
+        openOpusId: 'mozart-k550-mbid',
         composerIds: [composer.id],
       }),
     })
@@ -127,18 +127,18 @@ describe('POST /v1/works', () => {
     expect(body.type).toBe('Symphony')
     expect(body.key).toBe('G minor')
     expect(body.catalogNumber).toBe('K. 550')
-    expect(body.musicbrainzId).toBe('mozart-k550-mbid')
+    expect(body.openOpusId).toBe('mozart-k550-mbid')
     expect(body.composers).toHaveLength(1)
     expect(body.composers[0].name).toBe('Wolfgang Amadeus Mozart')
   })
 
-  it('returns 409 when musicbrainzId is duplicated', async () => {
+  it('returns 409 when openOpusId is duplicated', async () => {
     const composer = await createComposer()
-    await createWork([composer.id], { musicbrainzId: 'duplicate-mbid' })
+    await createWork([composer.id], { openOpusId: 'duplicate-mbid' })
     const res = await app.request('/v1/works', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: 'Other Work', composerIds: [composer.id], musicbrainzId: 'duplicate-mbid' }),
+      body: JSON.stringify({ title: 'Other Work', composerIds: [composer.id], openOpusId: 'duplicate-mbid' }),
     })
     expect(res.status).toBe(409)
   })

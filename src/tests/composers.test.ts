@@ -56,7 +56,7 @@ describe('GET /v1/composers/:id', () => {
     const created = await app.request('/v1/composers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Johannes Brahms', sortName: 'Brahms, Johannes', musicbrainzId: 'mbid-123' }),
+      body: JSON.stringify({ name: 'Johannes Brahms', sortName: 'Brahms, Johannes', openOpusId: 'mbid-123' }),
     })
     const { id } = await created.json() as any
 
@@ -65,7 +65,7 @@ describe('GET /v1/composers/:id', () => {
     expect(res.status).toBe(200)
     expect(body.name).toBe('Johannes Brahms')
     expect(body.sortName).toBe('Brahms, Johannes')
-    expect(body.musicbrainzId).toBe('mbid-123')
+    expect(body.openOpusId).toBe('mbid-123')
   })
 })
 
@@ -83,14 +83,14 @@ describe('POST /v1/composers', () => {
     const res = await app.request('/v1/composers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Johannes Brahms', sortName: 'Brahms, Johannes', musicbrainzId: 'brahms-mbid' }),
+      body: JSON.stringify({ name: 'Johannes Brahms', sortName: 'Brahms, Johannes', openOpusId: 'brahms-mbid' }),
     })
     const body = await res.json() as any
     expect(res.status).toBe(201)
     expect(body.id).toBeDefined()
     expect(body.name).toBe('Johannes Brahms')
     expect(body.sortName).toBe('Brahms, Johannes')
-    expect(body.musicbrainzId).toBe('brahms-mbid')
+    expect(body.openOpusId).toBe('brahms-mbid')
   })
 
   it('optional fields default to null when not provided', async () => {
@@ -101,11 +101,11 @@ describe('POST /v1/composers', () => {
     })
     const body = await res.json() as any
     expect(body.sortName).toBeNull()
-    expect(body.musicbrainzId).toBeNull()
+    expect(body.openOpusId).toBeNull()
   })
 
-  it('returns 409 when musicbrainzId is duplicated', async () => {
-    const payload = { name: 'Johannes Brahms', musicbrainzId: 'test-123' }
+  it('returns 409 when openOpusId is duplicated', async () => {
+    const payload = { name: 'Johannes Brahms', openOpusId: 'test-123' }
     await app.request('/v1/composers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -114,7 +114,7 @@ describe('POST /v1/composers', () => {
     const res = await app.request('/v1/composers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Brahms Copy', musicbrainzId: 'test-123' }),
+      body: JSON.stringify({ name: 'Brahms Copy', openOpusId: 'test-123' }),
     })
     expect(res.status).toBe(409)
   })
