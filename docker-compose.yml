@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:17
+    container_name: concert_tracker_database
     restart: unless-stopped
     environment:
       POSTGRES_USER: concert
